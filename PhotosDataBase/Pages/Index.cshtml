@@ -1,0 +1,101 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Loading Photos";
+}
+
+<div class="text-center">
+    <h3>Load Photos into database</h3>
+    <div class="text-center"><h5 class="text-danger" id="errMessage"></h5></div>
+    <div class="form-inline" style="margin:10px auto; width:520px;">
+        <input type="text" id="dirNameInput" name="dirNameInput" placeholder="Folder with photos" class="form-control" style="margin-right:10px; width:300px;" />
+        <button type="button" id="searchFiles" class="btn btn-info" style="margin-right:10px; width:120px;">Load Photos</button>
+        <button type="button" id="cancelLoading" class="btn btn-warning" disabled="disabled" style="width:70px;">Cancel</button>
+    </div>
+
+    <div class="text-center">
+        <h5 id="loadedFilesCount"></h5>        
+    </div>
+    <div class="progress" style="margin:5px auto;width:420px;display:none" id="progressDiv">
+        <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%;height:20px" id="progressBar">
+            0%
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script>
+        "use strict";
+
+        let mainTaskConn = new signalR.HubConnectionBuilder().withUrl("/searchandimport").build();
+        let cancelTaskConn = new signalR.HubConnectionBuilder().withUrl("/searchandimport").build();
+        let serverMsgsConn = new signalR.HubConnectionBuilder().withUrl("/searchandimport").build();
+
+        serverMsgsConn.on("ShowServerError", function (message) {
+            console.error("Server error: " + message);
+            document.getElementById("errMessage").innerText = message;
+
+            document.getElementById("dirNameInput").removeAttribute("disabled");
+            document.getElementById("searchFiles").removeAttribute("disabled");
+            document.getElementById("cancelLoading").setAttribute("disabled", "disabled");
+        });
+
+        serverMsgsConn.on("ShowLoadingProcess", function (allCount, loadedCount) {
+            var percent = (loadedCount / allCount * 100).toFixed(2);
+            document.getElementById("loadedFilesCount").innerText = "Loading photos: " + loadedCount + " / " + allCount;
+            document.getElementById("progressBar").innerText = percent + "%";
+            document.getElementById("progressBar").style.width = percent + "%";
+        });
+
+        serverMsgsConn.on("ShowImportResult", function () {
+            document.getElementById("loadedFilesCount").innerText = "All photos are loaded";
+            document.getElementById("progressDiv").style.display = "none";
+            document.getElementById("dirNameInput").removeAttribute("disabled");
+            document.getElementById("searchFiles").removeAttribute("disabled");
+            document.getElementById("cancelLoading").setAttribute("disabled", "disabled");
+        });
+
+        mainTaskConn.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+        cancelTaskConn.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+        serverMsgsConn.start().catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        document.getElementById("searchFiles").addEventListener("click", function (event) {
+            var basePath = document.getElementById("dirNameInput").value;
+
+            mainTaskConn.invoke("LoadPhotos", basePath).catch(function (err) {
+                document.getElementById("errMessage").innerText = err.toString();
+                return console.error(err.toString());
+            });
+
+            document.getElementById("progressBar").innerText = "0%";
+            document.getElementById("progressBar").style.width = "0%";
+            document.getElementById("progressDiv").style.display = "block";
+            document.getElementById("dirNameInput").setAttribute("disabled", "disabled");
+            document.getElementById("searchFiles").setAttribute("disabled", "disabled");
+            document.getElementById("cancelLoading").removeAttribute("disabled");
+
+            event.preventDefault();
+        });
+
+        document.getElementById("cancelLoading").addEventListener("click", function (event) {
+
+            cancelTaskConn.invoke("CancelLoading").catch(function (err) {
+                document.getElementById("errMessage").innerText = err.toString();
+                return console.error(err.toString());
+            });
+
+            document.getElementById("dirNameInput").removeAttribute("disabled");
+            document.getElementById("searchFiles").removeAttribute("disabled");
+            document.getElementById("cancelLoading").setAttribute("disabled", "disabled");
+
+            event.preventDefault();
+        });
+
+    </script>
+}

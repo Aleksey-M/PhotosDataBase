@@ -35,8 +35,10 @@ namespace PhotosDataBase
             });
 
             var sqlConnectionString = Configuration.GetConnectionString("Default");
-
+            
             services.AddDbContext<PhotosDbContext>(options => options.UseNpgsql(sqlConnectionString));
+            services.AddHostedService<PhotosImportWorker>();
+            services.AddSingleton<PhotosImportWorker>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
@@ -63,9 +65,8 @@ namespace PhotosDataBase
 
             app.UseSignalR(config =>
             {
-                //config.MapHub<PhotosSearchHub>("/photossearch");
-                //config.MapHub<PhotosImportHub>("/photosimport");
-                config.MapHub<PhotosSearchHub>("/searchandimport");
+                config.MapHub<PhotosClientHub>("/photosclient");
+                config.MapHub<PhotosServerHub>("/photosserver");
             });
 
             app.UseMvc();

@@ -27,12 +27,12 @@
     <script>
         "use strict";
 
-        let mainTaskConn = new signalR.HubConnectionBuilder().withUrl("/searchandimport").build();
-        let cancelTaskConn = new signalR.HubConnectionBuilder().withUrl("/searchandimport").build();
-        let serverMsgsConn = new signalR.HubConnectionBuilder().withUrl("/searchandimport").build();
+        let mainTaskConn = new signalR.HubConnectionBuilder().withUrl("/photosserver").build();
+        let cancelTaskConn = new signalR.HubConnectionBuilder().withUrl("/photosserver").build();
+        let serverMsgsConn = new signalR.HubConnectionBuilder().withUrl("/photosclient").build();
 
-        serverMsgsConn.on("ShowServerError", function (message) {
-            console.error("Server error: " + message);
+        serverMsgsConn.on("ShowServerError", function (fileName, message) {
+            console.error("Server error: " + fileName + " - " + message);
             document.getElementById("errMessage").innerText = message;
 
             document.getElementById("dirNameInput").removeAttribute("disabled");
@@ -40,15 +40,14 @@
             document.getElementById("cancelLoading").setAttribute("disabled", "disabled");
         });
 
-        serverMsgsConn.on("ShowLoadingProcess", function (allCount, loadedCount) {
-            var percent = (loadedCount / allCount * 100).toFixed(2);
-            document.getElementById("loadedFilesCount").innerText = "Loading photos: " + loadedCount + " / " + allCount;
+        serverMsgsConn.on("ShowLoadingProcess", function (message, percent) {
+            document.getElementById("loadedFilesCount").innerText = message;
             document.getElementById("progressBar").innerText = percent + "%";
             document.getElementById("progressBar").style.width = percent + "%";
         });
 
-        serverMsgsConn.on("ShowImportResult", function () {
-            document.getElementById("loadedFilesCount").innerText = "All photos are loaded";
+        serverMsgsConn.on("ShowImportResult", function (message) {
+            document.getElementById("loadedFilesCount").innerText = message;
             document.getElementById("progressDiv").style.display = "none";
             document.getElementById("dirNameInput").removeAttribute("disabled");
             document.getElementById("searchFiles").removeAttribute("disabled");
@@ -68,7 +67,7 @@
         document.getElementById("searchFiles").addEventListener("click", function (event) {
             var basePath = document.getElementById("dirNameInput").value;
 
-            mainTaskConn.invoke("LoadPhotos", basePath).catch(function (err) {
+            mainTaskConn.invoke("StartLoadingPhotos", basePath).catch(function (err) {
                 document.getElementById("errMessage").innerText = err.toString();
                 return console.error(err.toString());
             });
@@ -85,7 +84,7 @@
 
         document.getElementById("cancelLoading").addEventListener("click", function (event) {
 
-            cancelTaskConn.invoke("CancelLoading").catch(function (err) {
+            cancelTaskConn.invoke("CancelLoadingPhotos").catch(function (err) {
                 document.getElementById("errMessage").innerText = err.toString();
                 return console.error(err.toString());
             });

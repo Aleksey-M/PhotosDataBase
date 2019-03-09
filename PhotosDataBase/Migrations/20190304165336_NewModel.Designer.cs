@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using PhotosDataBase.Model;
@@ -9,9 +10,10 @@ using PhotosDataBase.Model;
 namespace PhotosDataBase.Migrations
 {
     [DbContext(typeof(PhotosDbContext))]
-    partial class PhotosDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190304165336_NewModel")]
+    partial class NewModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

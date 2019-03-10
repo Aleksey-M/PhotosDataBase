@@ -38,7 +38,6 @@ namespace PhotosDataBase
             
             services.AddDbContext<PhotosDbContext>(options => options.UseNpgsql(sqlConnectionString));
             services.AddHostedService<PhotosImportWorker>();
-            services.AddSingleton<PhotosImportWorker>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 

@@ -14,15 +14,52 @@ using System.Threading.Tasks;
 
 namespace PhotosDataBase.Model
 {
-    //public interface IClientFunctions
-    //{
-    //    Task ShowLoadingProcess(string message, float percent);
-    //    Task ShowServerError(string fileName, string message);
-    //    Task ShowImportResult(string message);
-    //}
+    public static class AppCurrentState
+    {
+        // !!! Is not thread safe
+        private static string _path = null;
+        private static CancellationTokenSource _workCancellation = null;
 
-    public class PhotosImportWorker : BackgroundService
-    {        
+        public static bool IsWorking => _workCancellation != null;
+
+        public static void StopWorking()
+        {
+            if (IsWorking)
+            {
+                _workCancellation.Cancel();
+                _workCancellation = null;
+                _path = null;
+            }
+        }
+
+        public static void SetPath(string path)
+        {
+            if (_path == null)
+                _path = path;
+        }
+
+        public static (string path, CancellationToken token) GetPathForWork()
+        {
+            if (!IsWorking)
+            {
+                _workCancellation = new CancellationTokenSource();
+                return (_path, _workCancellation.Token);
+            }
+            else
+                return (null, CancellationToken.None);
+        }
+
+        public static bool IsReadyForStart => _path != null && !IsWorking;
+
+        public static void WorkIsDone()
+        {
+            _workCancellation = null;
+            _path = null;
+        }
+    }
+
+    public class PhotosImportWorker : IHostedService
+    {
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly IHubContext<PhotosClientHub> _clientHub;
 
@@ -32,76 +69,64 @@ namespace PhotosDataBase.Model
             _clientHub = clientHub;
         }
 
-        private static readonly object _mutex = new object();
-        private static string _importFolderPath = null;
-        private static CancellationTokenSource _cts = null;
-        private static IDisposable _timer = null;
-        private static int _filesToProcess = 0;
-        private static int _processedFiles = 0;
+        //private CancellationTokenSource _cts = null;
+        private CancellationToken? _token = null;
+        private CancellationTokenSource _cts = null;
+        private IDisposable _timer = null;
+        private int _filesToProcess = 0;
+        private int _processedFiles = 0;
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task StartAsync(CancellationToken cancellationToken)
         {
-            string path; 
-            while (!stoppingToken.IsCancellationRequested)
+            string path;
+            while (!cancellationToken.IsCancellationRequested)
             {
-                lock (_mutex)
-                {
-                    path = _importFolderPath;
-                }
-                if(path != null)
-                {
-                    await StartWork(path);
+                if (AppCurrentState.IsReadyForStart)
+                {                    
+                    (path, _token) = AppCurrentState.GetPathForWork();
+                    try
+                    {
+                        _timer = Observable.Interval(TimeSpan.FromMilliseconds(500))
+                            .Subscribe(
+                                async i => await ShowLoadingProcess()
+                            );
+
+                        _cts = CancellationTokenSource.CreateLinkedTokenSource(_token.Value);
+
+                        var photoFilesNames = Directory.GetFileSystemEntries(path, "*.jpg", SearchOption.AllDirectories);
+                        await WorkProcess(path, photoFilesNames, _cts.Token);
+                    }
+                    catch (Exception exc)
+                    {
+                        await ShowServerError(string.Empty, exc.Message);
+                    }
+                    finally
+                    {
+                        FinishWork();
+                    }
                 }
                 else
                     await Task.Delay(500);
             }
-        }        
-
-        public void SetImportFolder(string path)
-        {
-            if (!IsWorking)
-            {
-                lock (_mutex)
-                {
-                    if (_importFolderPath == null) _importFolderPath = path;
-                }
-            }            
         }
 
-        public void CancelWork()
+        public Task StopAsync(CancellationToken cancellationToken)
         {
-            lock (_mutex)
-            {
-                try
-                {
-                    _cts?.Cancel();
-                    _timer?.Dispose();
-                }
-                finally
-                {
-                    FinishWork();
-                }
-            }
+            _cts?.Cancel();
+            FinishWork();            
+            return Task.CompletedTask;
         }
 
-        private static void FinishWork()
+        private void FinishWork()
         {
-            _cts = null;
+            AppCurrentState.WorkIsDone();
+            _cts?.Dispose();
+            _timer?.Dispose();
+
+            _token = null;
             _timer = null;
             _filesToProcess = 0;
             _processedFiles = 0;
-            _importFolderPath = null;
-        }
-
-        public bool IsWorking
-        {
-            get
-            {
-                lock (_mutex)
-                {
-                    return _cts != null;
-                }
-            }
         }
 
         private Task ShowLoadingProcess()
@@ -112,40 +137,11 @@ namespace PhotosDataBase.Model
             return _clientHub.Clients.All.SendAsync("ShowLoadingProcess", msg, percent);
         }
 
-        private Task ShowServerError(string fileName, string message) => 
+        private Task ShowServerError(string fileName, string message) =>
             _clientHub.Clients.All.SendAsync("ShowServerError", fileName, message);
 
         private Task ShowImportResult() =>
-            _clientHub.Clients.All.SendAsync("ShowImportResult", "Photos search is finished");        
-
-        private async Task StartWork(string basePath)
-        {
-            try
-            {
-                //if (IsWorking)
-                //{
-                //    await ShowServerError(string.Empty, "The process is already underway");
-                //    return;
-                //}
-
-                _timer = Observable.Interval(TimeSpan.FromMilliseconds(500))
-                    .Subscribe(
-                        async i => await ShowLoadingProcess()
-                    );
-
-                lock (_mutex)
-                {
-                    _cts = new CancellationTokenSource();
-                }
-                
-                var photoFilesNames = Directory.GetFileSystemEntries(basePath, "*.jpg", SearchOption.AllDirectories);
-                await WorkProcess(basePath, photoFilesNames, _cts.Token);
-            }
-            catch (Exception exc)
-            {
-                await ShowServerError(string.Empty, exc.Message);
-            }
-        }
+            _clientHub.Clients.All.SendAsync("ShowImportResult", "Photos search is finished");
 
         private async Task WorkProcess(string path, IEnumerable<string> fileList, CancellationToken token)
         {
@@ -169,7 +165,7 @@ namespace PhotosDataBase.Model
 
                     foreach (var fn in fileList)
                     {
-                        token.ThrowIfCancellationRequested();
+                        if(token.IsCancellationRequested) break;
 
                         try
                         {
@@ -239,7 +235,6 @@ namespace PhotosDataBase.Model
                 }
                 finally
                 {
-                    _timer?.Dispose();
                     FinishWork();
                 }
 

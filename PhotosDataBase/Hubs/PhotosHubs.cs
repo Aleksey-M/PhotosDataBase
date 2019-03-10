@@ -12,28 +12,15 @@ namespace PhotosDataBase.Hubs
 
     public class PhotosServerHub : Hub
     {
-        private readonly IServiceProvider _serviceProvider;
-        public PhotosServerHub(IServiceProvider serviceProvider)
-        {
-            _serviceProvider = serviceProvider;
-        }
-               
+  
         public void StartLoadingPhotos(string dir)
         {
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var worker = scope.ServiceProvider.GetRequiredService<PhotosImportWorker>();
-                worker.SetImportFolder(dir);
-            }                         
+            AppCurrentState.SetPath(dir);                    
         }
 
         public void CancelLoadingPhotos()
         {
-            using (var scope = _serviceProvider.CreateScope())
-            {
-                var worker = scope.ServiceProvider.GetRequiredService<PhotosImportWorker>();
-                worker.CancelWork();                
-            }            
+            AppCurrentState.StopWorking();         
         }
     }
 }

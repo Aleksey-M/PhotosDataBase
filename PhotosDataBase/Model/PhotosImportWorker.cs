@@ -88,7 +88,7 @@ namespace PhotosDataBase.Model
                     {
                         _timer = Observable.Interval(TimeSpan.FromMilliseconds(500))
                             .Subscribe(
-                                async i => await ShowLoadingProcess()
+                                i => Task.WaitAll(ShowLoadingProcess())
                             );
 
                         _cts = CancellationTokenSource.CreateLinkedTokenSource(_token.Value);
@@ -124,6 +124,7 @@ namespace PhotosDataBase.Model
             _timer?.Dispose();
 
             _token = null;
+            _cts = null;
             _timer = null;
             _filesToProcess = 0;
             _processedFiles = 0;

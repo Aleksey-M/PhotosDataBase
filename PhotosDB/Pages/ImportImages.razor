@@ -1,0 +1,41 @@
+﻿@page "/importimages"
+
+<div class="text-center">
+    <h3>Import Photos do diary</h3>
+    <div class="text-center"><h5 class="text-danger" id="errMessage"></h5></div>
+    <div class="form-inline" style="margin:10px;">
+        <button type="button" id="startImport" class="btn btn-info" style="margin-right:10px; width:120px;">Load Photos</button>
+        <button type="button" id="cancelLoading" class="btn btn-warning" disabled="disabled" style="width:70px;">Cancel</button>
+    </div>
+
+    <table>
+        <tr>
+            <td>
+                <h5 id="importedPhotosCount"></h5>
+            </td>
+            <td>
+                <div class="progress" style="margin:5px auto;width:420px;display:none" id="phProgressDiv">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%;height:20px" id="progressBarPhotos">
+                        0%
+                    </div>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <h5 id="createdRecordsCount"></h5>
+            </td>
+            <td>
+                <div class="progress" style="margin:5px auto;width:420px;display:none" id="recProgressDiv">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%;height:20px" id="progressBarRecords">
+                        0%
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+@code {
+
+}

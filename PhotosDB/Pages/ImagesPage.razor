@@ -1,0 +1,165 @@
+﻿@page "/images"
+
+@using PhotosDB.Data
+@using System.Diagnostics
+
+@inject LiteDbService Database
+
+<h4>Добавленные фото (@_images.Count из @_photosCount)</h4>
+
+<nav>
+    <ul class="pagination">
+        @if (_pager.CurrentPage == 1)
+        {
+            <li class="page-item active">
+                <span class="page-link">&lt;&lt;</span>
+            </li>
+        }
+        else
+        {
+            <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(1)">&lt;&lt;</a></li>
+        }
+
+        @foreach (int p in _pager.Pages)
+        {
+            @if (p == _pager.CurrentPage)
+            {
+                <li class="page-item active">
+                    <span class="page-link">@p</span>
+                </li>
+            }
+            else
+            {
+                <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(p)">@p</a></li>
+            }
+        }
+        @if (_pager.CurrentPage == _pager.EndPage)
+        {
+            <li class="page-item active">
+                <span class="page-link">&gt;&gt;</span>
+            </li>
+        }
+        else
+        {
+            <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(_pager.TotalPages)">&gt;&gt;</a></li>
+        }
+    </ul>
+</nav>
+
+<div class="row">
+    @foreach (var (img, thmb) in Images)
+    {
+        <div class="col-4" style="margin-top:5px;">
+            <div class="card" style="padding-top:5px">
+                <a @onclick="_ => OpenImage(img.FileNameFull)"><img class="card-img-top img-thumbnail" style="max-height:350px;max-width:350px; display:block; margin:auto; cursor:pointer" src="data:image/jpg;base64,@thmb" /> </a>
+                <div class="card-body">
+                    <ul class="small" style="list-style-type: none;">
+                        <li>@img.FileNameFull (@(img.Width?.ToString() ?? "NA") / @(img.Height?.ToString() ?? "NA")) 
+                            <button type="button" @onclick="_ => DeleteImage(img.ImageFileInfoId)" class="close" style="display:inline;color:red" title="Удалить фото из базы">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </li>
+                        <li>Снято <i style="color:blue">@(img.TakenDate?.ToString("yyyy.MM.dd hh:mm:ss") ?? "NA")</i> на <i style="color:blue">@(img.CameraModel ?? "NA")</i></li>
+                        <li><b>File CD:</b> @img.FileCreatedDate.ToString("yyyy.MM.dd hh:mm:ss")</li>
+                        <li><b>File MD:</b> @img.FileModifiedDate.ToString("yyyy.MM.dd hh:mm:ss")</li>
+                        <li><b>Added:</b> @img.AddToBaseDate.ToString("yyyy.MM.dd hh:mm:ss")</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    }
+    </div>
+
+<nav>
+    <ul class="pagination">
+        @if (_pager.CurrentPage == 1)
+        {
+            <li class="page-item active">
+                <span class="page-link">&lt;&lt;</span>
+            </li>
+        }
+        else
+        {
+            <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(1)">&lt;&lt;</a></li>
+        }
+
+        @foreach (int p in _pager.Pages)
+        {
+            @if (p == _pager.CurrentPage)
+            {
+                <li class="page-item active">
+                    <span class="page-link">@p</span>
+                </li>
+            }
+            else
+            {
+                <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(p)">@p</a></li>
+            }
+        }
+        @if (_pager.CurrentPage == _pager.EndPage)
+        {
+            <li class="page-item active">
+                <span class="page-link">&gt;&gt;</span>
+            </li>
+        }
+        else
+        {
+            <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(_pager.TotalPages)">&gt;&gt;</a></li>
+        }
+    </ul>
+</nav>
+
+@code {
+
+    private List<ImageFileInfo> _images;
+    private Pager _pager;
+    private const int IMAGES_PER_PAGE = 50;
+
+    private IEnumerable<(ImageFileInfo fInfo, string img)> Images
+    {
+        get
+        {
+            foreach (var i in _images)
+            {
+                var b64 = Convert.ToBase64String(i.PhotoPreview);
+                yield return (i, b64);
+            }
+        }
+    }
+
+    private int _photosCount;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitializedAsync();
+        _photosCount = Database.GetImagesCount();
+
+        _pager = new Pager(_photosCount, pageSize: IMAGES_PER_PAGE);
+        _images = Database.GetImages(0, IMAGES_PER_PAGE);
+    }
+
+    private void OpenImage(string imgNameFull)
+    {
+        new Process
+        {
+            StartInfo = new ProcessStartInfo(imgNameFull)
+            {
+                UseShellExecute = true
+            }
+        }.Start();
+    }
+
+    private void OpenPage(int pageNo)
+    {
+        _photosCount = Database.GetImagesCount();
+        _pager = new Pager(_photosCount, currentPage: pageNo, pageSize: IMAGES_PER_PAGE);
+        _images = Database.GetImages(_pager.StartIndex, IMAGES_PER_PAGE);
+    }
+
+    private void DeleteImage(Guid imageId)
+    {
+        Database.DeleteImage(imageId);
+        _images.Remove(_images.Single(i => i.ImageFileInfoId == imageId));
+        _photosCount = Database.GetImagesCount();
+    }
+}

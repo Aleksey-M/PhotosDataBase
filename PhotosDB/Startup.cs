@@ -22,7 +22,9 @@ namespace PhotosDB
         {
             services.AddRazorPages();
             services.AddServerSideBlazor();
-            services.AddSingleton<WeatherForecastService>();
+
+            services.AddSingleton(c => new LiteDbService("database.ldb"));
+            services.AddSingleton<ImagesReader>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

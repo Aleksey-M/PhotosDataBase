@@ -8,16 +8,26 @@ using System.Threading.Tasks;
 
 namespace PhotosDB.Data
 {
-    public class ImportImages : IDisposable
+    public class ImagesReader : IDisposable
     {
         private readonly LiteDbService _liteDbService;
-        public ImportImages(LiteDbService liteDbService)
+        public ImagesReader(LiteDbService liteDbService)
         {
             _liteDbService = liteDbService;
         }
 
         private readonly object _syncObj = new object();
         private CancellationTokenSource _cts;
+        public bool IsWorking
+        {
+            get
+            {
+                lock (_syncObj)
+                {
+                    return _cts != null;                    
+                }
+            }
+        }
 
         public async Task Process(string searchPath, CancellationToken token, IProgress<(int allImages, int addedImages, int errors)> progress)
         {
@@ -35,8 +45,11 @@ namespace PhotosDB.Data
 
             try
             {
-                var imagesFilesNames = Directory.GetFileSystemEntries(searchPath, "*.jpg,*.jpeg", SearchOption.AllDirectories);
-                int imagesCount = imagesFilesNames.Length;
+                var fileExtensions = new string[] { "*.jpg", "*.jpeg", "*.jfif" };
+
+                var imagesFilesNames = fileExtensions.SelectMany(ext => Directory.GetFileSystemEntries(searchPath, ext, SearchOption.AllDirectories)).ToList();
+
+                int imagesCount = imagesFilesNames.Count;
                 int errorsCount = 0;
 
                 await Task.Run(async () =>
@@ -57,6 +70,7 @@ namespace PhotosDB.Data
                                 ImageFileInfoId = Guid.NewGuid(),
                                 FileNameFull = fName,
                                 FileName = Path.GetFileName(fName),
+                                FileExtension = Path.GetExtension(fName),
                                 FileSize = new FileInfo(fName).Length,
                                 FileCreatedDate = File.GetCreationTime(fName),
                                 FileModifiedDate = File.GetLastWriteTime(fName)
@@ -64,13 +78,21 @@ namespace PhotosDB.Data
 
                             var file = ImageFile.FromFile(fName);
 
-                            imgFile.Height = Convert.ToInt32(file.Properties.First(p => p.Tag == ExifTag.PixelXDimension).Value);
-                            imgFile.Width = Convert.ToInt32(file.Properties.First(p => p.Tag == ExifTag.PixelYDimension).Value);
-                            imgFile.TakenDate = (DateTime)file.Properties.First(p => p.Tag == ExifTag.DateTimeOriginal).Value;
+                            var tag = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.PixelXDimension);
+                            imgFile.Height = tag == null ? null : (int?)Convert.ToInt32(tag.Value);
 
-                            var model = file.Properties.First(p => p.Tag == ExifTag.Model).Value.ToString();
-                            var make = file.Properties.First(p => p.Tag == ExifTag.Make).Value.ToString();
-                            imgFile.CameraModel = model.Contains(make) ? model : make + " " + model;
+                            tag = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.PixelYDimension);
+                            imgFile.Width = tag == null ? null : (int?)Convert.ToInt32(tag.Value);
+                            imgFile.TakenDate = (DateTime?)file.Properties.FirstOrDefault(p => p.Tag == ExifTag.DateTimeOriginal)?.Value;
+
+                            var model = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.Model)?.Value?.ToString();
+                            var make = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.Make)?.Value?.ToString();
+                            imgFile.CameraModel = (model, make, model?.Contains(make)) switch
+                            {
+                                (null, null, null) => null,
+                                (_, _, true) => model,
+                                (_, _, false) => make + " " + model
+                            };
 
                             imgFile.AddToBaseDate = DateTime.Now;
 

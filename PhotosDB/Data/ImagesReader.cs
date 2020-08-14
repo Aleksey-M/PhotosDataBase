@@ -97,7 +97,7 @@ namespace PhotosDB.Data
                             imgFile.AddToBaseDate = DateTime.Now;
 
                             var img = await File.ReadAllBytesAsync(imgFile.FileNameFull);
-                            imgFile.PhotoPreview = ScaleImage(img, 350);
+                            imgFile.PhotoPreview = ScaleImage(img, maxSizePx: 300, jpegQuality: 30);
 
                             _liteDbService.AddImage(imgFile);
                         }
@@ -135,7 +135,7 @@ namespace PhotosDB.Data
             }
         }
 
-        private static byte[] ScaleImage(byte[] data, int maxSizePx)
+        private static byte[] ScaleImage(byte[] data, int maxSizePx, int jpegQuality)
         {
             using var bitmap = SKBitmap.Decode(data);
             if (bitmap.ColorType != SKImageInfo.PlatformColorType)
@@ -158,7 +158,7 @@ namespace PhotosDB.Data
             var imageInfo = new SKImageInfo(width, height);
             using var thumbnail = bitmap.Resize(imageInfo, SKFilterQuality.Medium);
             using var img = SKImage.FromBitmap(thumbnail);
-            using var jpeg = img.Encode(SKEncodedImageFormat.Jpeg, 90);
+            using var jpeg = img.Encode(SKEncodedImageFormat.Jpeg, jpegQuality);
             using var memoryStream = new MemoryStream();
 
             jpeg.AsStream().CopyTo(memoryStream);

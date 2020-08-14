@@ -17,7 +17,7 @@
         }
         else
         {
-            <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(1)">&lt;&lt;</a></li>
+            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(1)">&lt;&lt;</a></li>
         }
 
         @foreach (int p in _pager.Pages)
@@ -30,7 +30,7 @@
             }
             else
             {
-                <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(p)">@p</a></li>
+                <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(p)">@p</a></li>
             }
         }
         @if (_pager.CurrentPage == _pager.EndPage)
@@ -41,7 +41,7 @@
         }
         else
         {
-            <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(_pager.TotalPages)">&gt;&gt;</a></li>
+            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(_pager.TotalPages)">&gt;&gt;</a></li>
         }
     </ul>
 </nav>
@@ -51,7 +51,7 @@
     {
         <div class="col-4" style="margin-top:5px;">
             <div class="card" style="padding-top:5px">
-                <a @onclick="_ => OpenImage(img.FileNameFull)"><img class="card-img-top img-thumbnail" style="max-height:350px;max-width:350px; display:block; margin:auto; cursor:pointer" src="data:image/jpg;base64,@thmb" /> </a>
+                <a @onclick="_ => OpenImage(img.FileNameFull)"><img class="img-thumbnail" style="display:block; margin:auto; cursor:pointer" src="data:image/jpg;base64,@thmb" /> </a>
                 <div class="card-body">
                     <ul class="small" style="list-style-type: none;">
                         <li>@img.FileNameFull (@(img.Width?.ToString() ?? "NA") / @(img.Height?.ToString() ?? "NA")) 
@@ -80,7 +80,7 @@
         }
         else
         {
-            <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(1)">&lt;&lt;</a></li>
+            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(1)">&lt;&lt;</a></li>
         }
 
         @foreach (int p in _pager.Pages)
@@ -93,7 +93,7 @@
             }
             else
             {
-                <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(p)">@p</a></li>
+                <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(p)">@p</a></li>
             }
         }
         @if (_pager.CurrentPage == _pager.EndPage)
@@ -104,7 +104,7 @@
         }
         else
         {
-            <li class="page-item"><a class="page-link" @onclick="_ => OpenPage(_pager.TotalPages)">&gt;&gt;</a></li>
+            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(_pager.TotalPages)">&gt;&gt;</a></li>
         }
     </ul>
 </nav>

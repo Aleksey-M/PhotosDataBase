@@ -51,6 +51,7 @@ namespace PhotosDB.Data
 
                 int imagesCount = imagesFilesNames.Count;
                 int errorsCount = 0;
+                int w, h;
 
                 await Task.Run(async () =>
                 {
@@ -76,28 +77,42 @@ namespace PhotosDB.Data
                                 FileModifiedDate = File.GetLastWriteTime(fName)
                             };
 
-                            var file = ImageFile.FromFile(fName);
+                            ImageFile exifImageFile = null;
 
-                            var tag = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.PixelXDimension);
-                            imgFile.Height = tag == null ? null : (int?)Convert.ToInt32(tag.Value);
-
-                            tag = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.PixelYDimension);
-                            imgFile.Width = tag == null ? null : (int?)Convert.ToInt32(tag.Value);
-                            imgFile.TakenDate = (DateTime?)file.Properties.FirstOrDefault(p => p.Tag == ExifTag.DateTimeOriginal)?.Value;
-
-                            var model = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.Model)?.Value?.ToString();
-                            var make = file.Properties.FirstOrDefault(p => p.Tag == ExifTag.Make)?.Value?.ToString();
-                            imgFile.CameraModel = (model, make, model?.Contains(make)) switch
+                            try
                             {
-                                (null, null, null) => null,
-                                (_, _, true) => model,
-                                (_, _, false) => make + " " + model
-                            };
+                                var file = ImageFile.FromFile(fName);
+                            }
+                            catch 
+                            {
+                                exifImageFile = null;
+                            }
+
+                            if (exifImageFile != null)
+                            {
+                                var tag = exifImageFile.Properties.FirstOrDefault(p => p.Tag == ExifTag.PixelXDimension);
+                                imgFile.Height = tag == null ? null : (int?)Convert.ToInt32(tag.Value);
+
+                                tag = exifImageFile.Properties.FirstOrDefault(p => p.Tag == ExifTag.PixelYDimension);
+                                imgFile.Width = tag == null ? null : (int?)Convert.ToInt32(tag.Value);
+                                imgFile.TakenDate = (DateTime?)exifImageFile.Properties.FirstOrDefault(p => p.Tag == ExifTag.DateTimeOriginal)?.Value;
+
+                                var model = exifImageFile.Properties.FirstOrDefault(p => p.Tag == ExifTag.Model)?.Value?.ToString();
+                                var make = exifImageFile.Properties.FirstOrDefault(p => p.Tag == ExifTag.Make)?.Value?.ToString();
+                                imgFile.CameraModel = (model, make, model?.Contains(make)) switch
+                                {
+                                    (null, null, null) => null,
+                                    (_, _, true) => model,
+                                    (_, _, false) => make + " " + model
+                                };
+                            }
 
                             imgFile.AddToBaseDate = DateTime.Now;
 
-                            var img = await File.ReadAllBytesAsync(imgFile.FileNameFull);
-                            imgFile.PhotoPreview = ScaleImage(img, maxSizePx: 300, jpegQuality: 30);
+                            var img = await File.ReadAllBytesAsync(imgFile.FileNameFull);                            
+                            (imgFile.PhotoPreview, w, h) = ScaleImage(img, maxSizePx: 300, jpegQuality: 30);
+                            imgFile.Width ??= w;
+                            imgFile.Height ??= h;
 
                             _liteDbService.AddImage(imgFile);
                         }
@@ -135,9 +150,12 @@ namespace PhotosDB.Data
             }
         }
 
-        private static byte[] ScaleImage(byte[] data, int maxSizePx, int jpegQuality)
+        private static (byte[] thumbnailImg, int sourceWidth, int sourceHeight) ScaleImage(byte[] data, int maxSizePx, int jpegQuality)
         {
             using var bitmap = SKBitmap.Decode(data);
+            int _width = bitmap.Width;
+            int _height = bitmap.Height;
+
             if (bitmap.ColorType != SKImageInfo.PlatformColorType)
             {
                 bitmap.CopyTo(bitmap, SKImageInfo.PlatformColorType);
@@ -162,7 +180,7 @@ namespace PhotosDB.Data
             using var memoryStream = new MemoryStream();
 
             jpeg.AsStream().CopyTo(memoryStream);
-            return memoryStream.ToArray();
+            return (memoryStream.ToArray(), _width, _height);
         }
 
         public void Dispose()

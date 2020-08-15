@@ -1,0 +1,64 @@
+﻿@using PhotosDB.Data
+
+<nav style="margin:10px">
+    <ul class="pagination">
+        @if (_pager.CurrentPage == 1)
+        {
+            <li class="page-item active">
+                <span class="page-link">&lt;&lt;</span>
+            </li>
+        }
+        else
+        {
+            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => Navigate(1)">&lt;&lt;</a></li>
+        }
+
+        @foreach (int p in _pager.Pages)
+        {
+            @if (p == _pager.CurrentPage)
+            {
+                <li class="page-item active">
+                    <span class="page-link">@p</span>
+                </li>
+            }
+            else
+            {
+                <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => Navigate(p)">@p</a></li>
+            }
+        }
+        @if (_pager.CurrentPage == _pager.EndPage)
+        {
+            <li class="page-item active">
+                <span class="page-link">&gt;&gt;</span>
+            </li>
+        }
+        else
+        {
+            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => Navigate(_pager.TotalPages)">&gt;&gt;</a></li>
+        }
+    </ul>
+</nav>
+
+@code {
+    private Pager _pager;
+    internal const int IMAGES_PER_PAGE = 50;
+
+    [Parameter]
+    public int PhotosCount { get; set; }
+    [Parameter]
+    public Action<int, int, int> OpenPageAction { get; set; }
+    [Parameter]
+    public int CurrentPage { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        _pager = new Pager(PhotosCount, CurrentPage, pageSize: IMAGES_PER_PAGE, maxPages: 15);
+    }
+
+    private void Navigate(int pageNo)
+    {
+        _pager = new Pager(PhotosCount, currentPage: pageNo, pageSize: IMAGES_PER_PAGE, maxPages: 15);
+        OpenPageAction(_pager.StartIndex, IMAGES_PER_PAGE, pageNo);
+    }
+}

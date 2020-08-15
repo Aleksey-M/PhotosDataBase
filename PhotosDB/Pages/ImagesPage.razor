@@ -3,55 +3,19 @@
 @using PhotosDB.Data
 @using System.Diagnostics
 
+@inject IJSRuntime JS
 @inject LiteDbService Database
 
 <h4>Добавленные фото (@_images.Count из @_photosCount)</h4>
 
-<nav>
-    <ul class="pagination">
-        @if (_pager.CurrentPage == 1)
-        {
-            <li class="page-item active">
-                <span class="page-link">&lt;&lt;</span>
-            </li>
-        }
-        else
-        {
-            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(1)">&lt;&lt;</a></li>
-        }
-
-        @foreach (int p in _pager.Pages)
-        {
-            @if (p == _pager.CurrentPage)
-            {
-                <li class="page-item active">
-                    <span class="page-link">@p</span>
-                </li>
-            }
-            else
-            {
-                <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(p)">@p</a></li>
-            }
-        }
-        @if (_pager.CurrentPage == _pager.EndPage)
-        {
-            <li class="page-item active">
-                <span class="page-link">&gt;&gt;</span>
-            </li>
-        }
-        else
-        {
-            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(_pager.TotalPages)">&gt;&gt;</a></li>
-        }
-    </ul>
-</nav>
+<PagerComponent PhotosCount="_photosCount" OpenPageAction="OpenPage" CurrentPage="_currentPage" />
 
 <div class="row">
     @foreach (var (img, thmb) in Images)
     {
         <div class="col-4" style="margin-top:5px;">
             <div class="card" style="padding-top:5px">
-                <a @onclick="_ => OpenImage(img.FileNameFull)"><img class="img-thumbnail" style="display:block; margin:auto; cursor:pointer" src="data:image/jpg;base64,@thmb" /> </a>
+                <a @onclick="async _ => await OpenImage(img.FileNameFull)"><img class="img-thumbnail" style="display:block; margin:auto; cursor:pointer" src="data:image/jpg;base64,@thmb" /> </a>
                 <div class="card-body">
                     <ul class="small" style="list-style-type: none;">
                         <li>@img.FileNameFull (@(img.Width?.ToString() ?? "NA") / @(img.Height?.ToString() ?? "NA")) 
@@ -68,52 +32,15 @@
             </div>
         </div>
     }
-    </div>
+</div>
 
-<nav>
-    <ul class="pagination">
-        @if (_pager.CurrentPage == 1)
-        {
-            <li class="page-item active">
-                <span class="page-link">&lt;&lt;</span>
-            </li>
-        }
-        else
-        {
-            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(1)">&lt;&lt;</a></li>
-        }
-
-        @foreach (int p in _pager.Pages)
-        {
-            @if (p == _pager.CurrentPage)
-            {
-                <li class="page-item active">
-                    <span class="page-link">@p</span>
-                </li>
-            }
-            else
-            {
-                <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(p)">@p</a></li>
-            }
-        }
-        @if (_pager.CurrentPage == _pager.EndPage)
-        {
-            <li class="page-item active">
-                <span class="page-link">&gt;&gt;</span>
-            </li>
-        }
-        else
-        {
-            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="_ => OpenPage(_pager.TotalPages)">&gt;&gt;</a></li>
-        }
-    </ul>
-</nav>
+<PagerComponent PhotosCount="_photosCount" OpenPageAction="OpenPage" CurrentPage="_currentPage" />
 
 @code {
 
     private List<ImageFileInfo> _images;
-    private Pager _pager;
-    private const int IMAGES_PER_PAGE = 50;
+    private int _currentPage = 1;
+    private int _photosCount;
 
     private IEnumerable<(ImageFileInfo fInfo, string img)> Images
     {
@@ -127,33 +54,38 @@
         }
     }
 
-    private int _photosCount;
-
     protected override void OnInitialized()
     {
         base.OnInitializedAsync();
         _photosCount = Database.GetImagesCount();
 
-        _pager = new Pager(_photosCount, pageSize: IMAGES_PER_PAGE);
-        _images = Database.GetImages(0, IMAGES_PER_PAGE);
+        _images = Database.GetImages(0, PagerComponent.IMAGES_PER_PAGE);
     }
 
-    private void OpenImage(string imgNameFull)
+    private async ValueTask OpenImage(string imgNameFull)
     {
-        new Process
+        try
         {
-            StartInfo = new ProcessStartInfo(imgNameFull)
+            new Process
             {
-                UseShellExecute = true
-            }
-        }.Start();
+                StartInfo = new ProcessStartInfo(imgNameFull)
+                {
+                    UseShellExecute = true
+                }
+            }.Start();
+        }
+        catch(Exception exc)
+        {
+            await JS.InvokeVoidAsync("window.alert", exc.Message);
+        }
     }
 
-    private void OpenPage(int pageNo)
+    private void OpenPage(int startIndex, int photosCount, int currentPage)
     {
         _photosCount = Database.GetImagesCount();
-        _pager = new Pager(_photosCount, currentPage: pageNo, pageSize: IMAGES_PER_PAGE);
-        _images = Database.GetImages(_pager.StartIndex, IMAGES_PER_PAGE);
+        _images = Database.GetImages(startIndex, photosCount);
+        _currentPage = currentPage;
+        StateHasChanged();
     }
 
     private void DeleteImage(Guid imageId)

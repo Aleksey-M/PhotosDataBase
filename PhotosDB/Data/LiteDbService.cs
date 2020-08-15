@@ -12,7 +12,7 @@ namespace PhotosDB.Data
 
         public LiteDbService(string fileName)
         {
-            _liteDb = new LiteDatabase($@"Filename={fileName}; Connection=shared");
+            _liteDb = new LiteDatabase($@"Filename={fileName}; Connection=direct");
         }
 
         public void AddImage(ImageFileInfo image)

@@ -5,13 +5,14 @@
 @using System.IO
 
 @inject ImagesReader Reader
+@inject LiteDbService Database
 
 <div class="text-center">
     <h3>Load Photos into database</h3>
     <div class="text-center"><h5 class="text-danger">@_errorMessage</h5></div>
     <div class="form-inline" style="margin:10px auto; width:520px;">
         <input @bind-value="_searchDir" type="text" placeholder="Folder with photos" class="form-control" style="margin-right:10px; width:300px;" disabled="@Working" />
-        <button @onclick="Start" type="button" class="btn btn-info" style="margin-right:10px; width:120px;" disabled="@Working">Load Photos</button>
+        <button @onclick="_ => Start(false)" type="button" class="btn btn-info" style="margin-right:10px; width:120px;" disabled="@Working">Load Photos</button>
         <button @onclick="Cancel" type="button" class="btn btn-warning" disabled="@(!Working)" style="width:70px;">Cancel</button>
     </div>
 
@@ -27,6 +28,15 @@
     </div>
 </div>
 
+@if (Database.GetErrorsCount() > 0)
+{
+<div class="text-center">
+    <hr />
+    <button @onclick="_ => Start(true)" disabled="@(Working)" type="button" class="btn btn-warning">Reload files from errors list</button>
+    <p style="color:red">*All errors will be removed from the database</p> 
+</div>
+}
+
 @code {
 
     private bool Working => _cts != null;
@@ -37,9 +47,9 @@
 
     private CancellationTokenSource _cts = null;
 
-    private async Task Start()
+    private async Task Start(bool fromErrors = false)
     {
-        if (!Directory.Exists(_searchDir))
+        if (!fromErrors && !Directory.Exists(_searchDir))
         {
             _errorMessage = "Directory not exists";
 
@@ -66,7 +76,18 @@
 
         _cts = new CancellationTokenSource();
 
-        await Reader.Process(_searchDir, _cts.Token, progress).ConfigureAwait(false);
+        if (!fromErrors)
+        {
+            await Reader.Process(_searchDir, _cts.Token, progress).ConfigureAwait(false);
+        }
+        else
+        {
+            int errorsCount = Database.GetErrorsCount();
+            var filesList = Database.GetErrors(0, errorsCount).Select(e => (e.FileNameFull, e.ImportExceptionInfoId)).ToList();
+            Database.DeleteErrors(filesList.Select(f => f.ImportExceptionInfoId).ToList());
+
+            await Reader.Process(filesList.Select(f => f.FileNameFull).Distinct().ToList(), _cts.Token, progress).ConfigureAwait(false);
+        }
 
         _cts?.Dispose();
         _cts = null;

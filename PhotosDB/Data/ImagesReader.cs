@@ -1,6 +1,7 @@
 ﻿using ExifLibrary;
 using SkiaSharp;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -29,7 +30,15 @@ namespace PhotosDB.Data
             }
         }
 
-        public async Task Process(string searchPath, CancellationToken token, IProgress<(int allImages, int addedImages, int errors)> progress)
+        public async Task Process(string searchDirectoryPath, CancellationToken token, IProgress<(int allImages, int addedImages, int errors)> progress)
+        {
+            var fileExtensions = new string[] { "*.jpg", "*.jpeg", "*.jfif" };
+            var imagesFilesNames = fileExtensions.SelectMany(ext => Directory.GetFileSystemEntries(searchDirectoryPath, ext, SearchOption.AllDirectories)).ToList();
+
+            await Process(imagesFilesNames, token, progress).ConfigureAwait(false);
+        }
+
+        public async Task Process(List<string> filesNames, CancellationToken token, IProgress<(int allImages, int addedImages, int errors)> progress)
         {
             lock (_syncObj)
             {
@@ -47,9 +56,7 @@ namespace PhotosDB.Data
             {
                 var fileExtensions = new string[] { "*.jpg", "*.jpeg", "*.jfif" };
 
-                var imagesFilesNames = fileExtensions.SelectMany(ext => Directory.GetFileSystemEntries(searchPath, ext, SearchOption.AllDirectories)).ToList();
-
-                int imagesCount = imagesFilesNames.Count;
+                int imagesCount = filesNames.Count;
                 int errorsCount = 0;
                 int w, h;
 
@@ -57,7 +64,7 @@ namespace PhotosDB.Data
                 {
                     int tmpCount = 0;
 
-                    foreach (var fName in imagesFilesNames)
+                    foreach (var fName in filesNames)
                     {
                         lock (_syncObj)
                         {
@@ -138,7 +145,7 @@ namespace PhotosDB.Data
                             progress.Report((allImages: imagesCount, addedImages: tmpCount, errors: errorsCount));
                         }
                     }
-                });
+                }).ConfigureAwait(false);
             }
             finally
             {

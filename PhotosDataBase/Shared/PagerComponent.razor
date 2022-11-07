@@ -1,0 +1,71 @@
+﻿@using PhotosDataBase.Data
+@using PhotosDataBase.Pages
+
+<nav style="margin:10px">
+    <ul class="pagination">
+        @if (_pager.CurrentPage == 1)
+        {
+            <li class="page-item active">
+                <span class="page-link">&lt;&lt;</span>
+            </li>
+        }
+        else
+        {
+            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="async _ => await Navigate(1)">&lt;&lt;</a></li>
+        }
+
+        @foreach (int p in _pager.Pages)
+        {
+            @if (p == _pager.CurrentPage)
+            {
+                <li class="page-item active">
+                    <span class="page-link">@p</span>
+                </li>
+            }
+            else
+            {
+                <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="async _ => await Navigate(p)">@p</a></li>
+            }
+        }
+        @if (_pager.CurrentPage == _pager.EndPage)
+        {
+            <li class="page-item active">
+                <span class="page-link">&gt;&gt;</span>
+            </li>
+        }
+        else
+        {
+            <li class="page-item" style="cursor:pointer"><a class="page-link" @onclick="async _ => await Navigate(_pager.TotalPages)">&gt;&gt;</a></li>
+        }
+    </ul>
+</nav>
+
+@code {
+
+    internal const int IMAGES_PER_PAGE = 50;
+
+    private Pager _pager = new(0);
+
+    [Parameter]
+    public long PhotosCount { get; set; }
+
+    [Parameter]
+    public Func<long, int, int, Task> OpenPageAction { get; set; } = (_, _, _) => Task.CompletedTask;
+
+    [Parameter]
+    public int CurrentPage { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        _pager = new Pager(PhotosCount, CurrentPage, pageSize: IMAGES_PER_PAGE, maxPages: 15);
+    }
+
+    private async Task Navigate(int pageNo)
+    {
+        _pager = new Pager(PhotosCount, currentPage: pageNo, pageSize: IMAGES_PER_PAGE, maxPages: 15);
+
+        await OpenPageAction(_pager.StartIndex, IMAGES_PER_PAGE, pageNo);
+    }
+}

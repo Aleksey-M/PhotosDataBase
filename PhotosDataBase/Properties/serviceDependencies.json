@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "rabbitmq1": {
+      "type": "rabbitmq",
+      "connectionId": "RabbitMQConnectionString",
+      "dynamicId": null
+    },
+    "mongodb1": {
+      "type": "mongodb",
+      "connectionId": "MongoDbConnectionString",
+      "dynamicId": null
+    }
+  }
+}

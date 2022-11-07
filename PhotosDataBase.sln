@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29519.87
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotosDB", "PhotosDB\PhotosDB.csproj", "{7CBBBDC2-CAA7-4DBF-93D5-03D748AB739E}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{08D35A9D-F299-4CD1-9FCE-895054C7BB4C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotosDataBase", "PhotosDataBase\PhotosDataBase.csproj", "{30B0DD6E-2863-4891-B658-CC4B2CB50646}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,10 +13,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{7CBBBDC2-CAA7-4DBF-93D5-03D748AB739E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7CBBBDC2-CAA7-4DBF-93D5-03D748AB739E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7CBBBDC2-CAA7-4DBF-93D5-03D748AB739E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7CBBBDC2-CAA7-4DBF-93D5-03D748AB739E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

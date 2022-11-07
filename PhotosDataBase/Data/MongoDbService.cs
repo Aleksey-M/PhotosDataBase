@@ -52,4 +52,9 @@ internal sealed class MongoDbService
     public async Task DeleteImage(string imageId) =>
         await _imagesCollection
             .DeleteOneAsync(x => x.Id == imageId);
+
+    public async Task<ImageFileInfo?> GetImage(string id) =>
+        await _imagesCollection
+        .Find(x => x.Id == id)
+        .FirstOrDefaultAsync();
 }

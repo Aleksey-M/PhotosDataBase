@@ -20,13 +20,14 @@
                     <ul class="small" style="list-style-type: none;">
                         <li>
                             <NavLink href="@("imageinfo/" + img.Id)">
-                                @img.FileNameFull (@(img.Width?.ToString() ?? "NA") / @(img.Height?.ToString() ?? "NA"))
+                                @GetImageName(img)
                             </NavLink>
+
                             <button type="button" @onclick="_ => DeleteImage(img.Id)" class="close" style="display:inline;color:red" title="Удалить фото из базы">
                                 <span aria-hidden="true">&times;</span>
                             </button>
                         </li>
-                        <li>Снято <i style="color:blue">@(img.TakenDate?.ToString("yyyy.MM.dd hh:mm:ss") ?? "NA")</i> на <i style="color:blue">@(img.CameraModel ?? "NA")</i></li>
+                        <li>@GetTakenAndCamera(img)</li>
                         <li><b>File CD:</b> @img.FileCreatedDate.ToString("yyyy.MM.dd hh:mm:ss")</li>
                         <li><b>File MD:</b> @img.FileModifiedDate.ToString("yyyy.MM.dd hh:mm:ss")</li>
                         <li><b>Added:</b> @img.AddToBaseDate.ToString("yyyy.MM.dd hh:mm:ss")</li>
@@ -98,4 +99,10 @@
         _images.Remove(_images.Single(i => i.Id == imageId));
         _photosCount = await Database.GetImagesCount();
     }
+
+    private string GetImageName(ImageFileInfo image) =>
+        $@"{image.FileNameFull} {(image.Width?.ToString() ?? "NA")} / {(image.Height?.ToString() ?? "NA")}";
+
+    private string GetTakenAndCamera(ImageFileInfo image) =>
+        @$"Снято [{(image.TakenDate?.ToString("yyyy.MM.dd hh:mm:ss") ?? "NA")}] на [{(image.CameraModel ?? "NA")}]";
 }

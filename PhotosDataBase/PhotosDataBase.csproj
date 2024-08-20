@@ -7,14 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="AppServices\HostedServices\**" />
+    <Content Remove="AppServices\HostedServices\**" />
+    <EmbeddedResource Remove="AppServices\HostedServices\**" />
+    <None Remove="AppServices\HostedServices\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="ExifLibrary" Version="1.0.13" />
     <PackageReference Include="MongoDB.Driver" Version="2.18.0" />
     <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
     <PackageReference Include="SkiaSharp" Version="2.88.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="AppServices\HostedServices\" />
   </ItemGroup>
 
 </Project>

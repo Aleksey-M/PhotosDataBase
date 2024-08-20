@@ -1,0 +1,8 @@
+﻿{
+  "profiles": {
+    "Photosorter": {
+      "commandName": "Project",
+      //"commandLineArgs": "C:\\Users\\malek\\OneDrive\\Изображения\\Пленка C:\\Users\\malek\\OneDrive\\PhotoArchive\\2022"
+    }
+  }
+}

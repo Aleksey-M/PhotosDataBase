@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotosDataBase", "PhotosDataBase\PhotosDataBase.csproj", "{30B0DD6E-2863-4891-B658-CC4B2CB50646}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotosDB", "PhotosDB\PhotosDB.csproj", "{B935731D-E74E-4295-9F68-F8E72970C961}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,6 +19,10 @@ Global
 		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B935731D-E74E-4295-9F68-F8E72970C961}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B935731D-E74E-4295-9F68-F8E72970C961}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B935731D-E74E-4295-9F68-F8E72970C961}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B935731D-E74E-4295-9F68-F8E72970C961}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

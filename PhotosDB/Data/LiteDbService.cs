@@ -64,14 +64,14 @@ public class LiteDbService : IDisposable
     public void DeleteErrors(IEnumerable<Guid> errorsIds)
     {
         var col = _liteDb.GetCollection<ImportExceptionInfo>("errors");
-        col.DeleteMany(e => errorsIds.Contains(e.ImportExceptionInfoId));
+        col.DeleteMany(e => errorsIds.Contains(e.Id));
     }
 
     public void DeleteImage(Guid imageId)
     {
         var col = _liteDb.GetCollection<ImageFileInfo>("images");
-        col.EnsureIndex(e => e.ImageFileInfoId);
-        col.DeleteMany(i => i.ImageFileInfoId == imageId);
+        col.EnsureIndex(e => e.Id);
+        col.DeleteMany(i => i.Id == imageId);
     }
 
     public void Dispose()

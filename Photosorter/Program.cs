@@ -38,7 +38,7 @@ app.Run();
 
 
 
-
+#region static methods
 static List<string> GetAllFiles(string directory)
 {
     var files = Directory.GetFiles(directory);
@@ -110,6 +110,6 @@ static void MoveFileToSubfolder(string fileName, string targetSubfolder)
 
     File.Move(fileName, targetFileName);
 }
-
+#endregion
 
 record DataFileInfo(string FileName, string Path, long FileSize, DateTime CreatedDate, DateTime ModifiedDate);

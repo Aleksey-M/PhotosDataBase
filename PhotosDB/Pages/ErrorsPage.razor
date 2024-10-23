@@ -50,7 +50,7 @@
 
     public void DeleteExceptions()
     {
-        Database.DeleteErrors(_exceptions.Select(e => e.ImportExceptionInfoId));
+        Database.DeleteErrors(_exceptions.Select(e => e.Id));
 
         _errorsCount = Database.GetErrorsCount();
         _exceptions = Database.GetErrors(0, 100);

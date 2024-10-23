@@ -2,7 +2,7 @@
 
 public class ImportExceptionInfo
 {
-    public Guid ImportExceptionInfoId { get; set; }
+    public Guid Id { get; set; }
     public string FileNameFull { get; set; } = string.Empty;
     public string FileName { get; set; } = string.Empty;
     public DateTime ExceptionDateTime { get; set; }
@@ -12,7 +12,7 @@ public class ImportExceptionInfo
 
 public class ImageFileInfo
 {
-    public Guid ImageFileInfoId { get; set; }
+    public Guid Id { get; set; }
     public string FileNameFull { get; set; } = string.Empty;
     public string FileName { get; set; } = string.Empty;
     public string FileExtension { get; set; } = string.Empty;

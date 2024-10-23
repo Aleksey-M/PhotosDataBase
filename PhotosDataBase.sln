@@ -8,8 +8,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		backlog.txt = backlog.txt
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotosDataBase", "PhotosDataBase\PhotosDataBase.csproj", "{30B0DD6E-2863-4891-B658-CC4B2CB50646}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PhotosDB", "PhotosDB\PhotosDB.csproj", "{B935731D-E74E-4295-9F68-F8E72970C961}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Photosorter", "Photosorter\Photosorter.csproj", "{5DF7A4B0-CC69-409C-943F-AF23762ECE2A}"
@@ -22,16 +20,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{A40B
 		scripts\sortImages.fsx = scripts\sortImages.fsx
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mediafiles.App", "Mediafiles.App\Mediafiles.App.csproj", "{F67B6DED-9A2B-4B7F-99C6-A2182FD93045}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mediafiles.Domain", "Mediafiles.Domain\Mediafiles.Domain.csproj", "{B6EEC632-4FB7-454E-BC79-EB2D3E5C1ADE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mediafiles.Application", "Mediafiles.Application\Mediafiles.Application.csproj", "{DF53F4CC-68A4-455D-AF1B-11C37D5A0410}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mediafiles.Infrastucture", "Mediafiles.Infrastucture\Mediafiles.Infrastucture.csproj", "{D2251473-A681-4833-91A5-A9FD855A80A6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{30B0DD6E-2863-4891-B658-CC4B2CB50646}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B935731D-E74E-4295-9F68-F8E72970C961}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B935731D-E74E-4295-9F68-F8E72970C961}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B935731D-E74E-4295-9F68-F8E72970C961}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -40,6 +42,22 @@ Global
 		{5DF7A4B0-CC69-409C-943F-AF23762ECE2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5DF7A4B0-CC69-409C-943F-AF23762ECE2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5DF7A4B0-CC69-409C-943F-AF23762ECE2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F67B6DED-9A2B-4B7F-99C6-A2182FD93045}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F67B6DED-9A2B-4B7F-99C6-A2182FD93045}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F67B6DED-9A2B-4B7F-99C6-A2182FD93045}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F67B6DED-9A2B-4B7F-99C6-A2182FD93045}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6EEC632-4FB7-454E-BC79-EB2D3E5C1ADE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6EEC632-4FB7-454E-BC79-EB2D3E5C1ADE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6EEC632-4FB7-454E-BC79-EB2D3E5C1ADE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6EEC632-4FB7-454E-BC79-EB2D3E5C1ADE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF53F4CC-68A4-455D-AF1B-11C37D5A0410}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF53F4CC-68A4-455D-AF1B-11C37D5A0410}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF53F4CC-68A4-455D-AF1B-11C37D5A0410}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF53F4CC-68A4-455D-AF1B-11C37D5A0410}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2251473-A681-4833-91A5-A9FD855A80A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2251473-A681-4833-91A5-A9FD855A80A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2251473-A681-4833-91A5-A9FD855A80A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2251473-A681-4833-91A5-A9FD855A80A6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

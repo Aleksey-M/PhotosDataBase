@@ -6,12 +6,14 @@ namespace PhotosDB.Data;
 public class ImagesReader : IDisposable
 {
     private readonly LiteDbService _liteDbService;
+
     public ImagesReader(LiteDbService liteDbService)
     {
         _liteDbService = liteDbService;
     }
 
     private readonly object _syncObj = new();
+
     private CancellationTokenSource? _cts;
 
     public bool IsWorking
@@ -93,7 +95,7 @@ public class ImagesReader : IDisposable
                     {
                         var imgFile = new ImageFileInfo
                         {
-                            ImageFileInfoId = Guid.NewGuid(),
+                            Id = Guid.NewGuid(),
                             FileNameFull = fName,
                             FileName = Path.GetFileName(fName),
                             FileExtension = Path.GetExtension(fName),
@@ -149,7 +151,7 @@ public class ImagesReader : IDisposable
                             FileName = Path.GetFileName(fName),
                             FileNameFull = fName,
                             ExceptionDateTime = DateTime.Now,
-                            ImportExceptionInfoId = Guid.NewGuid(),
+                            Id = Guid.NewGuid(),
                             Message = exc.Message,
                             StackTrace = exc.StackTrace ?? string.Empty
                         };

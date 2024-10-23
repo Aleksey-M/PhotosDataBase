@@ -83,7 +83,7 @@
         else
         {
             int errorsCount = Database.GetErrorsCount();
-            var filesList = Database.GetErrors(0, errorsCount).Select(e => (e.FileNameFull, e.ImportExceptionInfoId)).ToList();
+            var filesList = Database.GetErrors(0, errorsCount).Select(e => (e.FileNameFull, e.Id)).ToList();
             Database.DeleteErrors(filesList.Select(f => f.ImportExceptionInfoId).ToList());
 
             await Reader.Process(filesList.Select(f => f.FileNameFull).Distinct().ToList(), _cts.Token, progress).ConfigureAwait(false);

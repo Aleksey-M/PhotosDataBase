@@ -1,12 +1,13 @@
 using Mediafiles.App.Components;
+using Mediafiles.App.Data;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.AddServiceDefaults();
+//builder.AddServiceDefaults();
 
 builder.Services.AddSingleton(c => new LiteDbService("database.ldb"));
-builder.Services.AddSingleton<ImagesReader>();
+//builder.Services.AddSingleton<ImagesReader>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -15,7 +16,7 @@ builder.Services.AddFluentUIComponents();
 
 var app = builder.Build();
 
-app.MapDefaultEndpoints();
+//app.MapDefaultEndpoints();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

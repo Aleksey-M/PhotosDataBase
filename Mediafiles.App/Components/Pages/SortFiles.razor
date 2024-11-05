@@ -1,0 +1,52 @@
+﻿@page "/sort-files"
+@rendermode InteractiveServer
+
+@using Mediafiles.Application
+
+<h3>Сортировка файлов по дате создания</h3>
+
+<br />
+
+<h4>Папка с файлами для сортировки</h4>
+<FluentTextField @bind-Value=sourceDir style="width: 60%;"></FluentTextField>
+
+<h4>Корневая папка отсортированных файлов</h4>
+<FluentTextField @bind-Value=destRootDir style="width: 60%;"></FluentTextField>
+
+<br />
+<FluentButton Appearance="Appearance.Accent" OnClick="_ => Sort()">Отсортировать</FluentButton>
+
+<br />
+<ul>
+    @foreach (var f in folders)
+    {
+        <li>@f</li>
+    }
+</ul>
+<p style="color:red">@error</p>
+
+@code {
+    string sourceDir = "";
+    string destRootDir = "";
+    string error = "";
+
+    string[] folders = [];
+
+    [Inject]
+    public ILogger<SortFiles> Logger { get; set; } = null!;
+
+    public void Sort()
+    {
+        try
+        {
+            folders = Sorting.sortFiles(sourceDir, destRootDir);
+        }
+        catch(Exception exc)
+        {
+            error = exc.Message;
+            Logger.LogError(exc.Message + exc.StackTrace);
+            folders = [];
+        }
+        
+    }
+}

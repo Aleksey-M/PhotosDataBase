@@ -16,9 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mediafiles.Application\Mediafiles.Application.csproj" />
-    <ProjectReference Include="..\Mediafiles.Domain\Mediafiles.Domain.csproj" />
-    <ProjectReference Include="..\Mediafiles.Infrastucture\Mediafiles.Infrastucture.csproj" />
+    <ProjectReference Include="..\Mediafiles.Application\Mediafiles.Application.fsproj" />
+    <ProjectReference Include="..\Mediafiles.Domain\Mediafiles.Domain.fsproj" />
+    <ProjectReference Include="..\Mediafiles.Infrastructure\Mediafiles.Infrastructure.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,105 +1,111 @@
 open System.IO
-open System.Linq
 
 
-let directory = @"F:\tmp\src"
-let targetRootDir = @"F:\tmp\dest"
+let directory = @"C:\Users\malek\OneDrive\Изображения\Пленка"
+let targetRootDir = @"C:\Users\malek\OneDrive\PhotoArchive\2024"
 
 
-let getAllFiles2 directory = 
+let getAllFiles directory = 
         Directory.GetFileSystemEntries(directory, @"*.*", SearchOption.AllDirectories)
             |> Seq.filter(fun x -> File.Exists(x))
-
-
-let rec getAllFiles directory =
-    let files = Directory.GetFiles(directory)
-    let dirs = Directory.GetDirectories(directory)
-
-    let filesList : ResizeArray<string> = files.ToList()
-    for d in dirs do
-        filesList.AddRange(getAllFiles d)     
-
-    filesList
-
-
-let insertDotsTo8CharsDateString (dateStr : string) =
-    if dateStr.Length = 8 then
-        dateStr.Insert(6, ".").Insert(4, ".")
-    else
-         "Unknown"
-
+            |> Seq.toArray
 
 let isLongNumber (input: string) =
     match System.Int64.TryParse(input) with
     | (true, _) -> true
     | (false, _) -> false
 
-let getDateStringFromNokiaXPress (fn : string) =
-    let name = fn.Split(',')[0]
-    if isLongNumber name then
-        name.Substring(4, 4) + "." + name.Substring(2, 2) + "." + name.Substring(0, 2)
-    else
-        "Unknown"
+let isValidDateString (input: string) =
+    match System.DateTime.TryParse(input) with
+    | (true, d) when d.Year > 2000 && d.Year < 2100 -> true
+    | (_, _) -> false
 
-
-// type FileNameFormat =
-//     | IsStandartFormat 
-//     | IsNokia5800
-//     | IsScreenshot
-
+///Файлы Nokia Express 5800 (25102013246.jpg)
 let (|IsNokia5800|_|) (fName:string) =
-    let head = fName.Split('_') |> Seq.head
+    let head = fName//fName.Split('.') |> Seq.head
     if head.Length = 11 && isLongNumber(head) then
-        Some (head.Substring(4, 4) + "." + head.Substring(2, 2) + "." + head.Substring(0, 2))
+        let result = head.Substring(4, 4) + "." + head.Substring(2, 2) + "." + head.Substring(0, 2)
+        if isValidDateString result then
+            Some (result)
+        else 
+            None
     else
         None
 
+///Файлы Андроид телефонов и Nokia Lumia (IMG_20191024_131013.jpg, WP_20170618_14_37_30_Pro.jpg)
+let (|IsIMGorWP|_|) (fName:string) =
+    let parts = fName.Split('_')
+    if parts.Length >= 3 && (List.contains parts[0] ["IMG"; "VID"; "WP"]) && parts[1].Length = 8 then
+        let result = parts[1].Insert(6, ".").Insert(4, ".")
+        if isValidDateString result then
+            Some (result)
+        else 
+            None
+    else
+        None
+    
+///Скриншоты (Screenshot_20231124-083735.png)
+let (|IsScreenshot|_|) (fName:string) =
+    let parts = fName.Split('_')
+    if parts.Length = 2 && parts[0].ToLower() = "screenshot" &&  parts[1].Contains('-') && parts[1].Length >= 8 then
+        let result = parts[1].Substring(0, 8).Insert(6, ".").Insert(4, ".")
+        if isValidDateString result then
+            Some (result)
+        else 
+            None
+    else
+        None
+
+///Файлы Samsung (20241016_090915.jpg)
+let (|IsSamsung|_|) (fName:string) =
+    let parts = fName.Split('_')
+    if parts.Length = 2 &&  parts[1].Length = 8 then
+        let result = parts[0].Insert(6, ".").Insert(4, ".")
+        if isValidDateString result then
+            Some (result)
+        else 
+            None
+    else
+        None
+
+let getDirName (fn:string) =
+    match System.IO.Path.GetFileName fn with
+    | IsScreenshot dn -> (fn, dn)
+    | IsIMGorWP dn -> (fn, dn)
+    | IsNokia5800 dn -> (fn, dn)
+    | IsSamsung dn -> (fn, dn)
+    | _ -> (fn, "Unknown")
+
+let groupFilesByFolderNames (files: string array) =
+    files
+    |> Seq.map (fun x -> getDirName x)
+    |> Seq.groupBy snd
+    |> Seq.map (fun (key, values) -> (key, values |> Seq.map fst, values |> Seq.length))
+    |> Seq.sortBy( fun (x, _, _) -> x)
 
 
-// IsScreenshot
-// IsFullDateSecondSegment
-// IsSortedDate 20241016_092531.mp4
+///Перенос файлов в указанную папку с проверкой на уникальность по названию
+let moveFilesToFolder (dirName: string, files: string seq) =
+    if not (Directory.Exists(dirName)) then
+        Directory.CreateDirectory(dirName) |> ignore 
 
-let getFileSubfolderNameByDate (fileName:string) =
-    let parts = List.ofSeq (fileName.Split('_'))
-    let fullDateSecondSegment = ["IMG"; "VID"; "WP"]
-
-    match parts with
-    | a::b::_ when a = "Screenshot" -> insertDotsTo8CharsDateString (b.Split("-")[0])
-    | a::b::_ when List.contains a fullDateSecondSegment -> insertDotsTo8CharsDateString b
-    | a::rest -> getDateStringFromNokiaXPress a
-    | _ -> "Unknown"
-
-
-
-let allFiles: ResizeArray<string> = getAllFiles directory
-printfn $"'{allFiles.Count}' file(s) finded in '{directory}' directory"
-
-
-let moveFileToSubfolder (fileName: string) (targetSubfolder: string) =
-    if not (Directory.Exists(targetSubfolder)) then
-        Directory.CreateDirectory(targetSubfolder) |> ignore 
-
-    let targetFileName = Path.Combine(targetSubfolder, Path.GetFileName(fileName))
-    let checkedTargetFile =
-        if File.Exists targetFileName then 
-            Path.Combine(
-            targetSubfolder,
-            Path.GetFileNameWithoutExtension(fileName)
-                + System.Guid.NewGuid().ToString()
-                + Path.GetExtension(fileName))
+    files
+    |> Seq.map (fun x -> (x, Path.Combine(dirName, Path.GetFileName(x))))
+    |> Seq.map (fun (x, y) -> 
+        if File.Exists y then
+            (x, Path.Combine(dirName, Path.GetFileNameWithoutExtension(y) + System.Guid.NewGuid().ToString() + Path.GetExtension(y)))
         else
-            targetFileName
+            (x, y))
+    |> Seq.iter (fun (x, y) -> File.Move(x, y))
 
-    File.Move(fileName, checkedTargetFile)
 
+let allFiles = getAllFiles directory
+printfn $"'{allFiles.Length}' file(s) finded in '{directory}' directory"
 
-// сортировка файлов по папкам
-List.ofSeq allFiles
-    |> List.map (fun x ->
-        let subfolder = getFileSubfolderNameByDate (System.IO.Path.GetFileName x)
-        let fillFolderName = Path.Combine(targetRootDir, subfolder)
-        moveFileToSubfolder x fillFolderName)
+let groupedFiles = groupFilesByFolderNames allFiles
+groupedFiles |> Seq.iter (fun (dir, files, c) ->
+    moveFilesToFolder (Path.Combine(targetRootDir, dir), files)
+    System.Console.WriteLine($"{dir} - {c}"))
 
 
 printfn "Done"

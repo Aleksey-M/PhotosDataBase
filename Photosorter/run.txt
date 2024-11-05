@@ -1,2 +1,0 @@
-﻿
-.\photosorter.exe sort-images --source-dir  --target-root-dir 

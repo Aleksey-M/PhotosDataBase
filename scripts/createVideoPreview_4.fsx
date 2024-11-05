@@ -15,6 +15,7 @@ let factory = ConnectionFactory(HostName = "localhost")
 factory.ClientProvidedName <- "Video Previews Creator"
 let connection = factory.CreateConnection()
 let channel = connection.CreateModel()
+channel.BasicQos(0u, 1us, false)
 
 channel.ExchangeDeclare("for-thumbnailing", ExchangeType.Direct, durable=true) |> ignore
 channel.QueueDeclare("for-thumbnailing-Image", true, false, false) |> ignore
@@ -40,7 +41,7 @@ consumer.Received |> Observable.add (fun args ->
         channel.BasicPublish("for-thumbnailing",  routingKey = "Image", body = messageBytes)
         channel.BasicAck(args.DeliveryTag, false)
     with exc ->
-        Console.WriteLine($"При обработке сообщения для получения метаданных произошла ошибка: {exc.Message}{exc.StackTrace}")
+        Console.WriteLine($"При получении превью для видео произошла ошибка: {exc.Message}{exc.StackTrace}")
         channel.BasicNack(args.DeliveryTag, false, requeue = true)
 )
 

@@ -1,8 +1,10 @@
 #r "nuget:MetadataExtractor"
+#r "nuget:SkiaSharp"
 
 open System
 open System.IO
 open MetadataExtractor
+open SkiaSharp
 
 type FileData = {
     id: Guid
@@ -142,3 +144,31 @@ let createThumbnailingMsg (m:FileMetadata) =
         tempVideoPreviewName = ""
         thumbnailBase64 = ""
     }
+
+
+let scaleImage (data: byte array, maxSizePx: int, jpegQuality: int) =
+    use bitmap = SKBitmap.Decode(data)
+    let _width = bitmap.Width
+    let _height = bitmap.Height
+
+    if bitmap.ColorType <> SKImageInfo.PlatformColorType then
+        bitmap.CopyTo(bitmap, SKImageInfo.PlatformColorType) |> ignore
+    
+    let mutable width = 0
+    let mutable height = 0
+
+    if bitmap.Width >= bitmap.Height then
+        width <- maxSizePx
+        height <- Convert.ToInt32((double)bitmap.Height / (double)bitmap.Width * (double)maxSizePx)
+    else
+        height <- maxSizePx
+        width <- Convert.ToInt32((double)bitmap.Width / (double)bitmap.Height * (double)maxSizePx)
+    
+    let imageInfo = new SKImageInfo(width, height)
+    use thumbnail = bitmap.Resize(imageInfo, SKFilterQuality.Medium)
+    use img = SKImage.FromBitmap(thumbnail)
+    use jpeg = img.Encode(SKEncodedImageFormat.Jpeg, jpegQuality)
+    use memoryStream = new MemoryStream()
+
+    jpeg.AsStream().CopyTo(memoryStream)
+    (memoryStream.ToArray(), _width, _height)

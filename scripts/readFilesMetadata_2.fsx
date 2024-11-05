@@ -12,6 +12,7 @@ let factory = ConnectionFactory(HostName = "localhost")
 factory.ClientProvidedName <- "Files Metadata reader"
 let connection = factory.CreateConnection()
 let channel = connection.CreateModel()
+channel.BasicQos(0u, 1us, false)
 
 // входная очередь с записями о файлах
 channel.QueueDeclare("files-data", true, false, false) |> ignore

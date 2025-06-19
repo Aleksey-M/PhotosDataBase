@@ -1,0 +1,99 @@
+﻿@page "/collections"
+@rendermode InteractiveServer
+
+@using Mediafiles.Application.Repositories
+@using Mediafiles.Domain.Entities
+
+@inject NavigationManager Navigation
+@inject ILogger<Collections> Logger
+@inject IMediaCollectionRepository _repository
+
+<EditForm Model="@_mediaCollectionInfo" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <FluentTextField Label="Collection Name" @bind-Value="_mediaCollectionInfo.CollectionName" Required="true" />
+    <FluentTextField Label="Collection Description" @bind-Value="_mediaCollectionInfo.CollectionDescr" Required="true" />
+    <br />
+
+    @if (!string.IsNullOrEmpty(_errorMessage))
+    {
+        <p style="color:red">@_errorMessage</p>
+    }
+
+    <FluentButton Type="ButtonType.Submit">Save</FluentButton>
+    <FluentButton Type="ButtonType.Button" OnClick="Cancel">Cancel</FluentButton>
+</EditForm>
+
+<br />
+
+@if(_collections.Count != 0){
+    <table>
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Название коллекции</th>
+                <th>Описание</th>
+                <th>Дата создания</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var c in _collections)
+            {
+                <tr>
+                    <td>@c.Id</td>
+                    <td>@c.CollectionName</td>
+                    <td>@c.CollectionDescr</td>
+                    <td>@c.CreateDate.ToString("yyyy.MM.dd HH:mm:ss")</td>
+                    <td><FluentButton Appearance="Appearance.Lightweight">Изменить</FluentButton></td>
+                    <td><FluentButton BackgroundColor="rgba(255, 100, 100, 1)" Color="var(--info)">Удалить</FluentButton></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+    private MediaCollectionInfo _mediaCollectionInfo = new MediaCollectionInfo();
+    private string? _errorMessage = null;
+
+    private List<MediaCollectionInfo> _collections = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        _collections = await _repository.GetCollections();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            _mediaCollectionInfo.CreateDate = DateTime.UtcNow;
+            var result = await _repository.AddCollection(_mediaCollectionInfo);
+
+            Logger.LogInformation("{result}", result);
+            if (!result.IsSuccess)
+            {
+                var message = ((dynamic)result).Item as string;
+                _errorMessage = message;
+                return;
+            }
+
+            Logger.LogInformation($"Создана коллекция {_mediaCollectionInfo.CollectionName}:{_mediaCollectionInfo.CollectionDescr}");
+            Navigation.NavigateTo("/");
+        }
+        catch (Exception exc)
+        {
+            Logger.LogError(exc, $"При сохранении новой коллекции возникла ошибка: {exc.Message}");
+            _errorMessage = exc.Message;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/");
+    }
+}

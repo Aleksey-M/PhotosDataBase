@@ -2,7 +2,7 @@ open System.IO
 
 
 let directory = @"C:\Users\malek\OneDrive\Изображения\Пленка"
-let targetRootDir = @"C:\Users\malek\OneDrive\PhotoArchive\2024"
+let targetRootDir = @"C:\Users\malek\OneDrive\PhotoArchive\2025"
 
 
 let getAllFiles directory = 

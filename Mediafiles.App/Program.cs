@@ -1,13 +1,26 @@
+using LiteDB;
 using Mediafiles.App.Components;
-using Mediafiles.App.Data;
+using Mediafiles.Application.Repositories;
+using Mediafiles.Infrastructure;
+using Mediafiles.Infrastructure.Repositories;
+using Mediafiles.Infrastructure.Settings;
 using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 //builder.AddServiceDefaults();
 
-builder.Services.AddSingleton(c => new LiteDbService("database.ldb"));
+var liteDbSettings = new LiteDbSettings();
+builder.Configuration.GetSection(nameof(LiteDbSettings)).Bind(liteDbSettings);
+await LiteDbInitializer.initializeDb(liteDbSettings.ConnectionUri);
+builder.Services.AddSingleton(_ => new LiteDatabase(liteDbSettings.ConnectionUri));
+
+//builder.Services.AddSingleton(c => new LiteDbService("database.ldb"));
 //builder.Services.AddSingleton<ImagesReader>();
+
+builder.Services.AddScoped<IMediaCollectionRepository, MediaCollectionRepository>();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -15,6 +28,8 @@ builder.Services.AddRazorComponents()
 builder.Services.AddFluentUIComponents();
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 //app.MapDefaultEndpoints();
 

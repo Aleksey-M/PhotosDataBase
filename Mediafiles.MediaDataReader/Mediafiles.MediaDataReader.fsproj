@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Worker">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <UserSecretsId>dotnet-Mediafiles.MediaDataReader-f8adaa4e-b6ef-40b7-8581-c69cf2c3ddfe</UserSecretsId>
   </PropertyGroup>
 
@@ -12,6 +12,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.6" />
   </ItemGroup>
 </Project>

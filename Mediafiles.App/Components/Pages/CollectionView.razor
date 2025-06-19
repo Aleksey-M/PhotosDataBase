@@ -1,0 +1,9 @@
+﻿@page "/collection/{CollectionName}"
+
+<h3>CollectionView</h3>
+<h3>@CollectionName</h3>
+
+@code {
+    [Parameter]
+    public string CollectionName { get; set; } = string.Empty;
+}
